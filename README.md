@@ -17,7 +17,7 @@ url = https://condescending-leakey-a6e381.netlify.app/
 우리팀은 각 Component에서 `Container`를 하위 컴포넌트로 하고 그 안에서 `Header`와 `Content` 를 하위 컴포넌트로 하는 구조를 선택하였습니다.
 
 ```js
-// 모든 컴포넌트는 Container안의 Header + Content 구조로 구성되어 있습니다.
+// Nav와 TopBar를 제외한 모든 컴포넌트는 Container안의 Header + Content 구조로 구성되어 있습니다.
 
 - Component/
 --- index.js
@@ -30,6 +30,8 @@ url = https://condescending-leakey-a6e381.netlify.app/
 
 - src/
 --- App/
+----- Nav/
+----- TopBar/
 ----- ProductSalesperiod/
 ----- ProductInfo/
 ----- PDOption/
@@ -40,11 +42,11 @@ url = https://condescending-leakey-a6e381.netlify.app/
 ----- ETC/
 ```
 
-각 컴포넌트들의 일관적 구조를 찾을 수 있었고, 재사용성의 극대화를 위한 선택이였습니다. 하지만 각 Component의 state들을 공유해야 했고, 각각의 props들이 전달되면서 props의 추적이 어려워지는 props Drilling 문제에 직면하게 되었습니다. 전역 state 관리를 위한 방법이 필요하다고 느꼈습니다.
+각 컴포넌트들의 일관적 구조를 찾을 수 있었고, 재사용성의 극대화를 위한 선택이였습니다. 하지만 각 Component의 state들을 서로가 공유해야 하는 상황이 있었고, 각각의 props들이 전달되면서 props의 추적이 어려워지는 props Drilling 문제에 직면하게 되었습니다. 따라서 전역 state 관리를 위한 방법이 필요하다고 느꼈습니다.
 
 ### How to Control Global State
 
-본 프로젝트에서는 각 컴포넌트 마다 공유하는 state가 있습니다. 때문에 효율적인 전역 State 관리가 필요했고, 우리팀은 React에서 제공하는 `ContextAPI`를 사용하기로 결정했습니다.
+본 프로젝트에서는 각 컴포넌트 마다 공유해야 하는 state가 있습니다. 때문에 효율적인 전역 State 관리가 필요했고, 우리팀은 React에서 제공하는 `ContextAPI`를 사용하기로 결정했습니다.
 
 ```jsx
 // store / PDdata.js
@@ -102,6 +104,14 @@ ProductInfo = {
 
 ```
 
+### Re-Rendering을 막기위한 노력
+
+Context API를 사용하면서 리렌더링 문제를 겪었습니다. Context API의 `Provider`가 Component 전체를 감싸고 있기 때문에 하나의 컴포넌트에서 전역 State를 Update하면 전체가 리렌더링되는 현상이 있었습니다. 
+
+해결을 위해 `React.Memo()` , `useCallback()`등의 방법을 시도해봤지만, 여전히 현상이 나타났습니다. 규모가 작은 App에서는 문제가 안될지라도, 큰 프로젝트에서는 분명히 퍼포먼스 이슈를 가져올 것이라고 생각했습니다. 
+
+이러한 경험을 통해, Context API를 사용하기 좋은 조건은 Static한 상태에 가까운(거의 변하지 않는) 데이터(ex. Theme)를 하위 컴포넌트에 전달해줘야 할 때 적합하다고 생각했습니다. 
+
 ###  Input(file)에 같은 파일 업로드
 
 input(type = file)에 파일을 업로드하면 onChange 이벤트가 작동을 하는데, 같은 파일을 다시 업로드 할 경우, 이벤트가 정확히 동작하지 않았습니다.
@@ -120,7 +130,7 @@ input(type = file)에 파일을 업로드하면 onChange 이벤트가 작동을 
     
 const handleImage = (e) => {
   imgsetter();
-  e.target.value // 이벤트 변수의 값을 초기화 해줍니다.
+  e.target.value = ''; // 이벤트 변수의 값을 초기화 해줍니다.
 }
 ```
 
@@ -276,6 +286,8 @@ const handleImage = (e) => {
 
 ### 저장하기 버튼
 
+![save](https://user-images.githubusercontent.com/84373490/151658437-c42ee70b-b365-4e7c-983a-a59e349a522f.jpg)
+
 ✔️ 필수값 미 입력시, 얼럿 제공
 
 ✔️ console창에 결과 출력
@@ -285,7 +297,11 @@ const handleImage = (e) => {
 <br/> -->
 
 ## 프로젝트 후기
+
 * 🎹신원규 : 팀 과제를 조장으로 수행하며 팀원간의 활발한 커뮤니케이션을 유도하고, 팀의 시간을 유동적으로 조정하는 경험을 통해 협업능력을 많이 성장시킨 것 같습니다!
-* 🎇김서윤
-* 🎈권영채
-* 🏀지연비  
+
+* 🎇김서윤 : 협업에서 활발한 소통이 중요하다는 것을 직접 느끼게 된 프로젝트였습니다!
+
+* 🎈권영채 : 기대했던 협업을 할 수 있었던 프로젝트였습니다. 예상치 못한 상황에서도 커뮤니케이션과 팀워크를 통해 극복했고, 그 과정에서 소통의 중요성을 다시 한번 깨달았습니다. 
+
+* 🏀지연비 : 빠른 템포로 협업하는 과정에서 소통하는 방법을 많이 배웠습니다!
